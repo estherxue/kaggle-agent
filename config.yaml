@@ -1,0 +1,78 @@
+# Kaggle Agent Configuration
+
+# LLM Provider Configuration
+llm:
+  # Provider definitions - each can be referenced by name in roles
+  providers:
+    - name: "openai"
+      type: "placeholder"
+      # Placeholder uses direct API call (can be swapped with litellm later)
+      api_key_env: "OPENAI_API_KEY"
+      base_url: null  # null means default OpenAI endpoint
+      model: "gpt-4o-mini"
+      # Cost per 1K tokens (in USD) - for budget tracking
+      cost_per_1k_prompt: 0.15
+      cost_per_1k_completion: 0.60
+
+    # Example: OpenRouter provider (commented out until implemented)
+    # - name: "openrouter"
+    #   type: "openrouter"
+    #   api_key_env: "OPENROUTER_API_KEY"
+    #   base_url: "https://openrouter.ai/api/v1"
+    #   model: "anthropic/claude-3-opus:beta"
+    #   cost_per_1k_prompt: 15.0
+    #   cost_per_1k_completion: 75.0
+
+    # Example: Ollama provider (commented out until implemented)
+    # - name: "ollama"
+    #   type: "ollama"
+    #   base_url: "http://localhost:11434"
+    #   model: "llama3.1:70b"
+    #   cost_per_1k_prompt: 0.0
+    #   cost_per_1k_completion: 0.0
+
+  # Role to provider mapping
+  roles:
+    planner: "openai"      # Strategic planning, competition analysis
+    coder: "openai"        # Writing code, feature engineering
+    reviewer: "openai"     # Code review, reflection
+    summarizer: "openai"   # Writing documentation, summarizing
+
+  # Default parameters for all roles
+  default:
+    temperature: 0.7
+    max_tokens: 4096
+
+# Budget and Safety Limits
+budget:
+  # Maximum number of experiments per competition
+  max_experiments_per_competition: 50
+  # Maximum LLM cost in USD per competition
+  max_llm_cost_usd: 50.0
+  # Maximum execution time per experiment in seconds
+  max_execution_time_per_exp_sec: 600
+  # Maximum Kaggle submissions per day
+  max_submissions_per_day: 5
+  # Minimum CV improvement required before auto-submit (0 = always submit best)
+  min_cv_improvement_threshold: 0.0
+
+# Paths (relative to project root)
+paths:
+  knowledge: "knowledge"
+  competitions: "competitions"
+
+# Execution settings
+execution:
+  # Timeout for code execution in seconds
+  timeout_sec: 300
+  # Whether to allow network access during code execution
+  allow_network: false
+  # Python interpreter to use (null = system default)
+  python_path: null
+
+# Kaggle settings
+kaggle:
+  # Whether to auto-submit after finding a good CV score
+  auto_submit: true
+  # Dry run mode - don't actually submit (for testing)
+  dry_run: false
