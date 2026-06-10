@@ -6,7 +6,7 @@ Provides utilities for:
 - Experiment tracking (logging experiments and results)
 """
 
-from .kaggle_api import KaggleClient, Leaderboard, Submission
+from .kaggle_api import KaggleClient, Leaderboard, Submission, MockKaggleClient
 from .executor import CodeExecutor, ExecutionResult
 from .tracker import ExperimentTracker, Experiment, ExperimentManifest
 
@@ -14,6 +14,7 @@ __all__ = [
     "KaggleClient",
     "Leaderboard",
     "Submission",
+    "MockKaggleClient",
     "CodeExecutor",
     "ExecutionResult",
     "ExperimentTracker",

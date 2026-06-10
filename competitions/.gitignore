@@ -1,0 +1,5 @@
+# Ignore everything in competitions by default
+# Each competition directory will have its own .gitignore rules
+*
+*/
+!.gitignore

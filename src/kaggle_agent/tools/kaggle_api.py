@@ -25,7 +25,7 @@ class Submission:
 
 @dataclass
 class Leaderboard:
- """Kaggle leaderboard data."""
+    """Kaggle leaderboard data."""
 
     competition_id: str
     entries: List[dict]  # Raw leaderboard data

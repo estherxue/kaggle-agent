@@ -6,7 +6,7 @@ Provides:
 - Reflection and knowledge update mechanisms
 """
 
-from .playbooks import PlaybookManager, PlaybookEntry, TechniqueCard
+from .playbooks import PlaybookManager, PlaybookEntry, TechniqueCard, ValidationRecord
 from .skills import SkillManager, Skill, SkillMetadata
 from .reflection import ReflectionEngine, ReflectionResult
 
@@ -14,6 +14,7 @@ __all__ = [
     "PlaybookManager",
     "PlaybookEntry",
     "TechniqueCard",
+    "ValidationRecord",
     "SkillManager",
     "Skill",
     "SkillMetadata",
