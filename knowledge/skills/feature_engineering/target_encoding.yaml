@@ -1,0 +1,18 @@
+name: target_encoding
+description: |
+  Target encoding for categorical features with smoothing.
+  Prevents overfitting through regularization and handles unknown categories.
+applicable_types:
+  - tabular
+applicable_conditions: |
+  Use for high cardinality categorical features (>10 categories).
+  Not recommended for very small datasets (<1000 samples) due to overfitting risk.
+  Must be careful with time series to prevent leakage.
+inputs:
+  - categorical_features
+  - target_variable
+outputs:
+  - encoded_features
+verified_in: []
+avg_cv_improvement: null
+last_updated: "2024-06-10"

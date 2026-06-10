@@ -1,0 +1,21 @@
+name: stratified_kfold
+description: |
+  Stratified K-Fold cross-validation wrapper for classification problems.
+  Handles OOF predictions, fold tracking, and custom metrics.
+applicable_types:
+  - tabular
+applicable_conditions: |
+  Use for classification problems with imbalanced classes.
+  Not suitable for time series (use time-based splits) or regression (use KFold).
+inputs:
+  - features
+  - target
+  - model_factory
+  - metric_function
+outputs:
+  - oof_predictions
+  - cv_score
+  - fold_scores
+verified_in: []
+avg_cv_improvement: null
+last_updated: "2024-06-10"

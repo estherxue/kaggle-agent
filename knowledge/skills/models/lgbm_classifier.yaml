@@ -1,0 +1,19 @@
+name: lgbm_classifier
+description: |
+  LightGBM classifier with recommended hyperparameters for different dataset sizes.
+  Includes early stopping integration and class weight support.
+applicable_types:
+  - tabular
+applicable_conditions: |
+  First choice for tabular classification.
+  Use CatBoost if heavy categorical encoding needed.
+  Use XGBoost if LightGBM overfits.
+inputs:
+  - features
+  - target
+outputs:
+  - predictions
+  - feature_importances
+verified_in: []
+avg_cv_improvement: null
+last_updated: "2024-06-10"
