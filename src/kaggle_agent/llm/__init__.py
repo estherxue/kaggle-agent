@@ -16,14 +16,18 @@ Usage:
 
 from typing import Dict, List, Optional
 
+from pathlib import Path
+
 from ..config import Config, LLMProviderConfig
 from .base import ChatMessage, ChatResponse, LLMProvider
+from .cursor import CursorAgentProvider, CursorTaskPending
 from .placeholder import MockProvider, PlaceholderProvider
 
 # Provider type registry
 PROVIDER_TYPES = {
     "placeholder": PlaceholderProvider,
     "mock": MockProvider,
+    "cursor": CursorAgentProvider,
     # Future providers can be registered here:
     # "litellm": LiteLLMProvider,
     # "openrouter": OpenRouterProvider,
@@ -42,15 +46,19 @@ class LLMRouter:
         providers: Dict[str, LLMProvider],
         role_mapping: Dict[str, str],
         default_params: dict,
+        cursor_tasks_dir: Optional[Path] = None,
     ):
         self.providers = providers
         self.role_mapping = role_mapping
         self.default_params = default_params
+        self.cursor_tasks_dir = cursor_tasks_dir
         self._cost_tracker: Dict[str, float] = {}  # provider_name -> total cost
         self._token_tracker: Dict[str, Dict[str, int]] = {}  # provider_name -> token counts
 
     @classmethod
-    def from_config(cls, config: Config) -> "LLMRouter":
+    def from_config(
+        cls, config: Config, cursor_tasks_dir: Optional[Path] = None
+    ) -> "LLMRouter":
         """Create router from configuration.
 
         Args:
@@ -62,7 +70,7 @@ class LLMRouter:
         providers: Dict[str, LLMProvider] = {}
 
         for provider_cfg in config.llm.providers:
-            provider = cls._create_provider(provider_cfg, config)
+            provider = cls._create_provider(provider_cfg, config, cursor_tasks_dir)
             if provider:
                 providers[provider_cfg.name] = provider
 
@@ -82,7 +90,9 @@ class LLMRouter:
 
     @staticmethod
     def _create_provider(
-        provider_cfg: LLMProviderConfig, config: Config
+        provider_cfg: LLMProviderConfig,
+        config: Config,
+        cursor_tasks_dir: Optional[Path] = None,
     ) -> Optional[LLMProvider]:
         """Create a provider instance from configuration.
 
@@ -97,8 +107,23 @@ class LLMRouter:
         if provider_class is None:
             raise ValueError(f"Unknown provider type: {provider_cfg.type}")
 
-        # Get API key from environment
+        # Get API key from environment (cursor provider does not need one)
         api_key = config.get_api_key(provider_cfg.name) or "dummy-key"
+
+        if provider_cfg.type == "cursor":
+            if cursor_tasks_dir is None:
+                raise ValueError(
+                    "cursor provider requires cursor_tasks_dir (competitions/<slug>/agent_tasks)"
+                )
+            return provider_class(
+                name=provider_cfg.name,
+                model=provider_cfg.model,
+                tasks_dir=cursor_tasks_dir,
+                api_key=api_key,
+                base_url=provider_cfg.base_url,
+                cost_per_1k_prompt=provider_cfg.cost_per_1k_prompt,
+                cost_per_1k_completion=provider_cfg.cost_per_1k_completion,
+            )
 
         return provider_class(
             name=provider_cfg.name,
@@ -204,4 +229,6 @@ __all__ = [
     "LLMRouter",
     "PlaceholderProvider",
     "MockProvider",
+    "CursorAgentProvider",
+    "CursorTaskPending",
 ]

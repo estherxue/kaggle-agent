@@ -87,14 +87,24 @@ class KaggleClient:
     def download_competition(self, slug: str, dest: Path) -> Path:
         """Download competition data files.
 
-        Args:
-            slug: Competition slug (e.g., 'titanic')
-            dest: Destination directory
-
-        Returns:
-            Path to downloaded data directory
+        Prefers kagglehub; falls back to the kaggle CLI.
         """
         dest.mkdir(parents=True, exist_ok=True)
+
+        if not self.dry_run:
+            try:
+                import kagglehub
+
+                kagglehub.competition_download(slug, output_dir=str(dest), force_download=True)
+                return dest
+            except ImportError:
+                pass
+            except Exception as exc:
+                print(f"kagglehub download failed ({exc}), falling back to kaggle CLI")
+
+        if self.dry_run:
+            print(f"[DRY RUN] Would download competition {slug} to {dest}")
+            return dest
 
         self._run_command([
             "competitions", "download",

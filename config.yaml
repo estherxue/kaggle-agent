@@ -2,41 +2,26 @@
 
 # LLM Provider Configuration
 llm:
-  # Provider definitions - each can be referenced by name in roles
   providers:
-    - name: "openai"
-      type: "placeholder"
-      # Placeholder uses direct API call (can be swapped with litellm later)
-      api_key_env: "OPENAI_API_KEY"
-      base_url: null  # null means default OpenAI endpoint
-      model: "gpt-4o-mini"
-      # Cost per 1K tokens (in USD) - for budget tracking
-      cost_per_1k_prompt: 0.15
-      cost_per_1k_completion: 0.60
+    - name: "cursor"
+      type: "cursor"
+      model: "cursor-agent"
+      cost_per_1k_prompt: 0.0
+      cost_per_1k_completion: 0.0
 
-    # Example: OpenRouter provider (commented out until implemented)
-    # - name: "openrouter"
-    #   type: "openrouter"
-    #   api_key_env: "OPENROUTER_API_KEY"
-    #   base_url: "https://openrouter.ai/api/v1"
-    #   model: "anthropic/claude-3-opus:beta"
-    #   cost_per_1k_prompt: 15.0
-    #   cost_per_1k_completion: 75.0
+    # Legacy OpenAI provider (optional)
+    # - name: "openai"
+    #   type: "placeholder"
+    #   api_key_env: "OPENAI_API_KEY"
+    #   model: "gpt-4o-mini"
+    #   cost_per_1k_prompt: 0.15
+    #   cost_per_1k_completion: 0.60
 
-    # Example: Ollama provider (commented out until implemented)
-    # - name: "ollama"
-    #   type: "ollama"
-    #   base_url: "http://localhost:11434"
-    #   model: "llama3.1:70b"
-    #   cost_per_1k_prompt: 0.0
-    #   cost_per_1k_completion: 0.0
-
-  # Role to provider mapping
   roles:
-    planner: "openai"      # Strategic planning, competition analysis
-    coder: "openai"        # Writing code, feature engineering
-    reviewer: "openai"     # Code review, reflection
-    summarizer: "openai"   # Writing documentation, summarizing
+    planner: "cursor"
+    coder: "cursor"
+    reviewer: "cursor"
+    summarizer: "cursor"
 
   # Default parameters for all roles
   default:

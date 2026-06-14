@@ -18,6 +18,7 @@ import click
 from .config import Config
 from .interaction import CompetitionInterface
 from .llm import LLMRouter
+from .llm.cursor import CursorTaskPending
 from .orchestrator import Orchestrator
 from .tools import MockKaggleClient
 
@@ -52,6 +53,33 @@ def main(ctx: click.Context, config: Optional[Path], mock: bool) -> None:
         sys.exit(1)
 
 
+def _build_orchestrator(
+    cfg: Config,
+    competition: str,
+    use_mock: bool,
+    resume: bool,
+) -> Orchestrator:
+    """Create orchestrator with cursor-aware LLM router."""
+    comp_path = cfg.resolve_path("competitions") / competition
+    tasks_dir = comp_path / "agent_tasks"
+    llm_router = LLMRouter.from_config(cfg, cursor_tasks_dir=tasks_dir)
+
+    if use_mock:
+        kaggle_client = MockKaggleClient()
+    else:
+        from .tools import KaggleClient
+
+        kaggle_client = KaggleClient(dry_run=cfg.kaggle.dry_run)
+
+    return Orchestrator(
+        config=cfg,
+        competition=competition,
+        llm_router=llm_router,
+        kaggle_client=kaggle_client,
+        resume=resume,
+    )
+
+
 @main.command()
 @click.argument("competition")
 @click.option(
@@ -80,29 +108,12 @@ def run(ctx: click.Context, competition: str, resume: bool, max_experiments: Opt
     if resume:
         click.echo("📂 Resuming from previous state...")
 
-    # Initialize LLM router
+    # Initialize LLM router and orchestrator
     try:
-        llm_router = LLMRouter.from_config(cfg)
+        orchestrator = _build_orchestrator(cfg, competition, use_mock, resume)
     except Exception as e:
-        click.echo(f"Error initializing LLM: {e}", err=True)
+        click.echo(f"Error initializing agent: {e}", err=True)
         sys.exit(1)
-
-    # Create Kaggle client
-    if use_mock:
-        click.echo("🔧 Using mock Kaggle client (testing mode)")
-        kaggle_client = MockKaggleClient()
-    else:
-        from .tools import KaggleClient
-        kaggle_client = KaggleClient(dry_run=cfg.kaggle.dry_run)
-
-    # Create orchestrator
-    orchestrator = Orchestrator(
-        config=cfg,
-        competition=competition,
-        llm_router=llm_router,
-        kaggle_client=kaggle_client,
-        resume=resume,
-    )
 
     # Override max experiments if specified
     if max_experiments:
@@ -110,6 +121,12 @@ def run(ctx: click.Context, competition: str, resume: bool, max_experiments: Opt
 
     try:
         orchestrator.run()
+    except CursorTaskPending as pending:
+        click.echo("\n⏸️  Paused — waiting for Cursor agent response.")
+        click.echo(f"   Task file:   {pending.task_path}")
+        click.echo(f"   Write to:    {pending.response_path}")
+        click.echo(f"\n   Then run: kagent continue {competition}")
+        sys.exit(0)
     except KeyboardInterrupt:
         click.echo("\n⚠️ Interrupted by user. Stopping gracefully...")
         orchestrator.stop()
@@ -124,6 +141,63 @@ def run(ctx: click.Context, competition: str, resume: bool, max_experiments: Opt
     click.echo(f"   Experiments: {status['experiment_count']}")
     click.echo(f"   Best CV: {status['best_cv_score']}")
     click.echo(f"   LLM Cost: ${status['llm_cost']:.4f}")
+
+
+@main.command(name="continue")
+@click.argument("competition")
+@click.pass_context
+def continue_run(ctx: click.Context, competition: str) -> None:
+    """Resume a competition after Cursor agent writes task response."""
+    cfg: Config = ctx.obj["config"]
+    use_mock: bool = ctx.obj["mock"]
+
+    click.echo(f"▶️  Continuing competition: {competition}")
+
+    try:
+        orchestrator = _build_orchestrator(cfg, competition, use_mock, resume=True)
+        orchestrator.run()
+    except CursorTaskPending as pending:
+        click.echo("\n⏸️  Still waiting for Cursor agent response.")
+        click.echo(f"   Task file:   {pending.task_path}")
+        click.echo(f"   Write to:    {pending.response_path}")
+        sys.exit(0)
+    except KeyboardInterrupt:
+        click.echo("\n⚠️ Interrupted by user. Stopping gracefully...")
+        orchestrator.stop()
+    except Exception as e:
+        click.echo(f"\n❌ Error: {e}", err=True)
+        raise
+
+    status = orchestrator.get_status()
+    click.echo("\n✅ Step completed!")
+    click.echo(f"   Phase: {status['phase']}")
+    click.echo(f"   Experiments: {status['experiment_count']}")
+    click.echo(f"   Best CV: {status['best_cv_score']}")
+
+
+@main.command()
+@click.argument("competition")
+@click.pass_context
+def task(ctx: click.Context, competition: str) -> None:
+    """Show the current pending Cursor agent task, if any."""
+    cfg: Config = ctx.obj["config"]
+    tasks_dir = cfg.resolve_path("competitions") / competition / "agent_tasks"
+
+    from .llm.cursor import CursorAgentProvider
+
+    provider = CursorAgentProvider(name="cursor", model="cursor-agent", tasks_dir=tasks_dir)
+    pending = provider.get_pending_task()
+
+    if pending is None:
+        click.echo(f"No pending Cursor task for {competition}.")
+        return
+
+    task_path, response_path = pending
+    click.echo(f"📋 Pending task for {competition}:")
+    click.echo(f"   Read:   {task_path}")
+    click.echo(f"   Write:  {response_path}")
+    click.echo("\n--- Task preview ---\n")
+    click.echo(task_path.read_text()[:4000])
 
 
 @main.command()
@@ -252,8 +326,11 @@ def config_check(ctx: click.Context) -> None:
     # Check LLM providers
     click.echo("LLM Providers:")
     for provider in cfg.llm.providers:
-        api_key = cfg.get_api_key(provider.name)
-        status = "✅ Set" if api_key and api_key != "dummy-key" else "❌ Not set"
+        if provider.type == "cursor":
+            status = "✅ No API key needed"
+        else:
+            api_key = cfg.get_api_key(provider.name)
+            status = "✅ Set" if api_key and api_key != "dummy-key" else "❌ Not set"
         click.echo(f"   {provider.name} ({provider.type}): {status}")
 
     # Check Kaggle

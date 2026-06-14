@@ -19,6 +19,7 @@ from typing import Any, Dict, List, Optional
 from .config import Config
 from .knowledge import PlaybookManager, ReflectionEngine, SkillManager
 from .llm import ChatMessage, LLMRouter
+from .llm.cursor import CursorTaskPending
 from .tools import (
     CodeExecutor,
     Experiment,
@@ -191,8 +192,9 @@ class Orchestrator:
     def run(self) -> None:
         """Run the full competition lifecycle."""
         try:
-            # Phase 1: Initialize
-            self._initialize()
+            # Phase 1: Initialize (only on fresh run)
+            if self.state.phase == CompetitionPhase.INITIALIZING:
+                self._initialize()
 
             # Phase 2: Understand competition
             if self.state.phase in [CompetitionPhase.INITIALIZING, CompetitionPhase.UNDERSTANDING]:
@@ -218,6 +220,10 @@ class Orchestrator:
             if self.state.phase == CompetitionPhase.COMPLETED:
                 self._retrospective()
 
+        except CursorTaskPending as pending:
+            self.state.notes.append(f"Cursor task pending: {pending.task_path.name}")
+            self._save_state()
+            raise
         except Exception as e:
             self.state.phase = CompetitionPhase.ERROR
             self.state.notes.append(f"Error: {str(e)}")
