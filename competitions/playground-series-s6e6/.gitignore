@@ -1,0 +1,7 @@
+data/
+experiments/
+submissions/
+state.json
+artifacts/
+!*.py
+!*.md
