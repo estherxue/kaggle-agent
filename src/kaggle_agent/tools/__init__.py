@@ -9,6 +9,7 @@ Provides utilities for:
 from .kaggle_api import KaggleClient, Leaderboard, Submission, MockKaggleClient
 from .executor import CodeExecutor, ExecutionResult
 from .tracker import ExperimentTracker, Experiment, ExperimentManifest
+from .kernel_fleet import KernelFleet, KernelRecord
 
 __all__ = [
     "KaggleClient",
@@ -20,4 +21,6 @@ __all__ = [
     "ExperimentTracker",
     "Experiment",
     "ExperimentManifest",
+    "KernelFleet",
+    "KernelRecord",
 ]

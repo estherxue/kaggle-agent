@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from .config import Config
+from .interaction import CompetitionInterface
 from .knowledge import PlaybookManager, ReflectionEngine, SkillManager
 from .llm import ChatMessage, LLMRouter
 from .llm.cursor import CursorTaskPending
@@ -145,6 +146,16 @@ class Orchestrator:
         competitions_path = config.resolve_path("competitions")
         self.tracker = ExperimentTracker(competition, competitions_path)
 
+        # Cross-process interaction interface.
+        #
+        # This MUST point at the same competitions_path the CLI uses so that
+        # `kagent stop` (STOP_REQUESTED file) and `kagent guide`
+        # (guidance_queue.json) — written by a *separate* process via
+        # CompetitionInterface — are read by the running orchestrator. Without
+        # this, the experiment loop only ever consulted its own in-memory
+        # CompetitionState stores and silently dropped both signals.
+        self.interface = CompetitionInterface(competition, competitions_path)
+
         # State management
         self.state_path = competitions_path / competition / "state.json"
         if resume and self.state_path.exists():
@@ -174,20 +185,40 @@ class Orchestrator:
         self.state.phase = CompetitionPhase.STOPPED
         self._save_state()
 
-    def add_guidance(self, guidance: str) -> None:
+    def add_guidance(self, guidance: str, source: str = "user") -> str:
         """Add guidance to the queue.
+
+        Writes to the shared, file-backed GuidanceQueue (the same store the
+        `kagent guide` CLI command writes to) so guidance survives across
+        processes and is actually consumed by the experiment loop.
 
         Args:
             guidance: Guidance text
+            source: Source of guidance (user, system, auto)
+
+        Returns:
+            The assigned guidance ID.
         """
-        self.state.guidance_queue.append(guidance)
-        self._save_state()
+        return self.interface.add_guidance(guidance, source)
 
     def _consume_guidance(self) -> Optional[str]:
-        """Consume guidance from queue."""
-        if self.state.guidance_queue:
-            return self.state.guidance_queue.pop(0)
-        return None
+        """Consume one pending guidance from the shared GuidanceQueue.
+
+        Reads/consumes from the same file-backed queue that
+        `kagent guide` writes to (via CompetitionInterface), then marks the
+        entry processed/adopted so it is not replayed. Returns the guidance
+        text, or None if the queue is empty.
+        """
+        guidance = self.interface.guidance.consume()
+        if guidance is None:
+            return None
+
+        # Record that we picked it up. `adopted` reflects that the experiment
+        # loop accepted the guidance for use in the next experiment.
+        self.interface.guidance.mark_processed(
+            guidance.id, adopted=True, notes="consumed by experiment loop"
+        )
+        return guidance.content
 
     def run(self) -> None:
         """Run the full competition lifecycle."""
@@ -343,6 +374,16 @@ Write the complete, runnable Python code."""
             self.state.experiment_count < budget.max_experiments_per_competition
             and not self._should_stop
         ):
+            # Check for a cross-process stop request (`kagent stop`). The CLI
+            # writes a STOP_REQUESTED file via CompetitionInterface; we read it
+            # here through the same interface. If set, log, clear it so a future
+            # resumed run isn't immediately halted, and break out gracefully.
+            if self.interface.get_stop_requested():
+                self.state.notes.append("Stop requested by user; halting experiment loop")
+                self.interface.clear_stop_request()
+                self._should_stop = True
+                break
+
             # Check budget
             if self.state.total_llm_cost >= budget.max_llm_cost_usd:
                 self.state.notes.append("LLM budget exhausted")
@@ -599,7 +640,7 @@ The code should:
 
         lines = []
         for exp in experiments:
-            lines.append(f"- {exp.get('id', '?'')}: CV={exp.get('cv_score', 'N/A')}, "
+            lines.append(f"- {exp.get('id', '?')}: CV={exp.get('cv_score', 'N/A')}, "
                         f"Success={exp.get('is_successful', False)}")
         return "\n".join(lines)
 
@@ -611,6 +652,6 @@ The code should:
             "experiment_count": self.state.experiment_count,
             "best_cv_score": self.state.best_cv_score,
             "llm_cost": self.state.total_llm_cost,
-            "guidance_queue_length": len(self.state.guidance_queue),
+            "guidance_queue_length": self.interface.guidance.get_stats()["pending_count"],
             "notes": self.state.notes[-5:],  # Last 5 notes
         }

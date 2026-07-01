@@ -8,7 +8,7 @@ import shutil
 from pathlib import Path
 
 from blend import main as run_blend
-from config import ARTIFACTS, RANDOM_STATE, SUBMISSIONS
+from config import ARTIFACTS, MODELS, RANDOM_STATE, SUBMISSIONS
 from experiment_log import log_experiment
 from features import FEATURE_SETS
 from train_oof import ALL_MODELS, TrainConfig, run_oof
@@ -32,11 +32,9 @@ def parse_args() -> argparse.Namespace:
 def _snapshot_artifacts(seed: int, feature_set: str) -> Path:
     snap = ARTIFACTS / f"snapshot_seed{seed}_{feature_set}"
     snap.mkdir(parents=True, exist_ok=True)
-    for name in [
-        "oof_lgb.npy", "oof_xgb.npy", "oof_cat.npy",
-        "test_lgb.npy", "test_xgb.npy", "test_cat.npy",
-        "y_train.npy", "train_meta.json", "blend_config.json",
-    ]:
+    names = [f"oof_{m}.npy" for m in MODELS] + [f"test_{m}.npy" for m in MODELS]
+    names += ["y_train.npy", "train_meta.json", "blend_config.json"]
+    for name in names:
         src = ARTIFACTS / name
         if src.exists():
             shutil.copy2(src, snap / name)

@@ -107,6 +107,9 @@ class GuidanceQueue:
             Guidance ID
         """
         with self.lock:
+            # Reload first so a counter bumped by another process is respected
+            # and we append to the latest on-disk pending list.
+            self._load()
             self._counter += 1
             guidance = Guidance(
                 id=f"g{self._counter:03d}",
@@ -125,18 +128,31 @@ class GuidanceQueue:
             List of pending Guidance objects
         """
         with self.lock:
+            self._load()
             return self._pending.copy()
 
     def consume(self) -> Optional[Guidance]:
         """Consume one guidance from queue.
 
+        Reloads from disk first so guidance written by another process (e.g.
+        ``kagent guide``) after this object was constructed is visible. The
+        consumed item is removed from the on-disk pending list immediately.
+
         Returns:
             Guidance or None if empty
         """
         with self.lock:
+            self._load()
             if not self._pending:
                 return None
             guidance = self._pending.pop(0)
+            # Move it into the processed list immediately and persist, so a
+            # crash before mark_processed() does not replay the same guidance,
+            # and so a later mark_processed(id, ...) can locate it to record
+            # whether it was ultimately adopted.
+            guidance.processed = True
+            self._processed.append(guidance)
+            self._save()
             return guidance
 
     def mark_processed(
@@ -153,6 +169,7 @@ class GuidanceQueue:
             notes: Additional notes
         """
         with self.lock:
+            self._load()
             # Find in pending (shouldn't happen, but just in case)
             for i, g in enumerate(self._pending):
                 if g.id == guidance_id:
@@ -194,6 +211,7 @@ class GuidanceQueue:
     def get_stats(self) -> Dict[str, Any]:
         """Get queue statistics."""
         with self.lock:
+            self._load()
             processed = self._processed
             adopted_count = sum(1 for g in processed if g.adopted)
             rejected_count = sum(1 for g in processed if g.adopted is False)
