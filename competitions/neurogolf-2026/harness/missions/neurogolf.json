@@ -1,0 +1,17 @@
+{
+  "topic": "The 2026 NeuroGolf Championship (Kaggle competition neurogolf-2026, part of the IJCAI-ECAI 2026 Competitions Track) — design the smallest ONNX neural networks that solve ARC-AGI image transformations.",
+  "questions": [
+    {
+      "id": "mechanics",
+      "q": "Competition mechanics. Find the EXACT scoring formula and how network 'size' is measured (confirm: per-task score = max(1, 25 - ln(cost)) where cost = #parameters + memory footprint + #MAC operations). The correctness gate (must be strictly correct on original ARC-AGI benchmarks, ARC-GEN-100K, and a private suite). Submission format (submission.zip with task001.onnx..task400.onnx, per-file 1.44MB limit). Hard constraints: static shapes required; disallowed ONNX ops Loop/Scan/NonZero/Unique/Script/Function. Timeline and prizes. Cite primary sources."
+    },
+    {
+      "id": "tiny_onnx",
+      "q": "Techniques for building the SMALLEST ONNX networks that EXACTLY solve ARC-AGI grid transformations: expressing recolor/translate/reflect/tile/crop/flood-fill/symmetry as cheap ONNX ops (Conv 1x1, Gather, Transpose, Slice, Pad, Tile), unrolling bounded cellular-automaton steps as fixed conv passes (since Loop is banned), building graphs by hand with onnx.helper to minimize params/MACs, quantization and weight sharing. Prior art on minimal/CA networks for ARC."
+    },
+    {
+      "id": "prior_art",
+      "q": "Existing public Kaggle notebooks, baselines, and discussion threads for neurogolf-2026: what the starter notebook does, what helper APIs / submission scaffolding / scoring scripts the competition provides, the exact ONNX submission file layout, and any leaderboard strategies people have shared."
+    }
+  ]
+}
