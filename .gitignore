@@ -68,3 +68,7 @@ htmlcov/
 
 # Logs
 *.log
+
+# Claude Code local artifacts (keep skills, exclude worktrees + machine-local settings)
+.claude/worktrees/
+.claude/settings.local.json
