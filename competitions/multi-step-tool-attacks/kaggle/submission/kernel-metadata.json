@@ -1,0 +1,13 @@
+{
+  "id": "cindyxue1122/msta-baseline",
+  "title": "msta-baseline",
+  "code_file": "msta_submission.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": false,
+  "enable_internet": false,
+  "competition_sources": ["ai-agent-security-multi-step-tool-attacks"],
+  "dataset_sources": [],
+  "kernel_sources": []
+}

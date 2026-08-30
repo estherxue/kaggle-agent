@@ -1,0 +1,7 @@
+# Harness is committable (non-solution). Ignore generated/transient artifacts only.
+__pycache__/
+*.pyc
+kaggle/submission/msta_submission.ipynb   # generated from attack.py by build_notebook.py
+kaggle/output/
+evaluation_artifacts/
+*.log
