@@ -72,3 +72,6 @@ htmlcov/
 # Claude Code local artifacts (keep skills, exclude worktrees + machine-local settings)
 .claude/worktrees/
 .claude/settings.local.json
+
+# CatBoost training residue
+catboost_info/
