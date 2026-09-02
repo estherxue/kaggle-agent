@@ -280,11 +280,13 @@ that one**:
 | class | example | how it presents |
 |---|---|---|
 | undefined semantics | pooling with a **negative stride** | fails spec validation; works only via undefined runtime behaviour |
-| accounting gap | parameters parked in an op attribute the cost function never enumerates | **passes** spec validation — the gap is in the scorer, not the format |
+| accounting gap | 577,192 elements of parameters parked in `TfIdfVectorizer` attributes (22/400 models) — `calculate_params()` enumerates initializers and *Constant-node* attributes only | **passes** spec validation — the gap is in the scorer, not the format |
 
-The first was found by hypothesis (cost ~15 points to decline); the second only by a
-multi-lens audit that included a "cost-accounting evasion" lens (cost 22.20). Both sat in the
-same third-party pack.
+The first was found by hypothesis (cost ~15.3 points to decline); the second only by a
+multi-lens audit that included a "cost-accounting evasion" lens (cost 22.20). Both sat in
+the same third-party pack — one whose provenance was airtight (immutable Kaggle result JSON;
+the shipped `.zip.bin` hashed to the sha256 its own manifest claimed). **Provenance quality
+does not predict method quality.** Declining both was deliberate: 7647.97 → **7625.77**.
 
 "Fails the local checker" is **not** the test — legitimate-but-exotic constructs fail it too
 (negative *pads* have well-defined crop semantics and appear in every pack). The usable test:
@@ -384,6 +386,16 @@ Two structural lessons underneath the table:
   Compounding cause: the file was produced by parallel work after the last `submissions/` scan
   and a context compaction hid it. **Rule: re-inventory `submissions/` and `artifacts/` before
   declaring a sweep exhausted — a sweep is only as complete as the last directory listing.**
+- **The lessons file was written, then was unreachable from where the work happened.**
+  `agent-field-lessons` (L1–L6) lived in this repo's *project-local* `.claude/skills/`. The
+  NeuroGolf campaign ran in a different repo, so the skill **was never loadable during the
+  campaign it was distilled from** — and L1-class errors were re-derived three times: a
+  validator false-positive nearly reverted 14 good artifacts; a wiped scratchpad silently
+  turned all 400 targets into phantom failures; and three verdicts nearly rested on comparing
+  `0/27` against `1/400`. It also froze on 2026-07-25 while nine more rules accumulated in
+  the other repo (backported here as L7–L11, five weeks late).
+  **Rule: knowledge must live where the work happens — global `~/.claude/skills/`, not
+  project-local — and backporting is a scheduled step, not a hope.**
 
 ## Built, but never used
 
