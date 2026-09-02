@@ -17,6 +17,15 @@ sections list what did *not* work, so it does not get rebuilt.
 > that turns a laptop into a fleet, and an honest local replica of the scorer that refuses
 > to be fooled.
 
+**File convention.** This root file is the *cross-campaign* synthesis. Anything specific to
+one competition belongs in `competitions/<name>/HARNESS.md`, so per-competition records never
+collide at the root as campaigns accumulate:
+
+| scope | file |
+|---|---|
+| cross-campaign (this file) | `/HARNESS.md` |
+| NeuroGolf 2026 | `competitions/neurogolf-2026/HARNESS.md` |
+
 ---
 
 # Part I — The five layers
