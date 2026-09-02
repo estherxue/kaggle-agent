@@ -399,12 +399,14 @@ Two structural lessons underneath the table:
 
 ## Built, but never used
 
-Listed, not deleted — "unused by me" is not "worthless".
+**Retention rule:** anything not written for the campaign that exposed it is *listed, not
+deleted* — "unused by me" is not "worthless". Only dead weight written **for** a campaign is
+removed, and then only with its evidence recorded here.
 
 | what | status |
 |---|---|
 | **`src/kaggle_agent/`** — `orchestrator.py` (657L), `cli.py`, `interaction.py`, `llm/`, `knowledge/` | The repo's nominal purpose: a state machine `INITIALIZING → … → COMPLETED`, a Cursor file-handoff LLM protocol, `PlaybookManager` / `SkillManager` / `ReflectionEngine`. **Zero references from any competition directory** — imported only by its own tests. All three campaigns ran with empty `agent_tasks/`, empty `experiments/`, no `state.json`. The effective loop was Claude Code driving scripts directly, steered by `CLAUDE.md`. |
-| **`competitions/neurogolf-2026/harness/research_harness.py`** (165L) | Parallel research fan-out (N researchers + 1 synthesizer). **Never actually run for the competition** — `findings/` contains no `research_*.md` or `synthesis.md`, and its own README concedes the pages "were researched by hand this run". Worse, its output was *wrong where it mattered*: the research brief asserted `cost` included MACs, and `verify_scoring.py` had to falsify it. |
+| **`competitions/neurogolf-2026/harness/research_harness.py`** (165L) + `missions/neurogolf.json` + `requirements.txt` | **DELETED 2026-09-02** (in git history). Parallel research fan-out (N researchers + 1 synthesizer). Written *for* this competition and **never actually run** for it — `findings/` contains no `research_*.md` or `synthesis.md`, and its own README conceded the pages "were researched by hand this run". Worse, its product was wrong exactly where it mattered: the mission asserted `cost` included MACs, and `verify_scoring.py` had to falsify it. |
 
 **The pattern:** every harness piece that worked was written *in response to a failure that had
 already happened.* The two designed up-front from a spec — the agent framework and the research

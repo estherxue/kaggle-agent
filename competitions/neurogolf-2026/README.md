@@ -1,66 +1,57 @@
-# kaggle-agent · research harness
+# NeuroGolf 2026 — what this competition contributed
 
-A small, reusable harness that codifies the flow we ran for NeuroGolf 2026:
+Build the smallest ONNX network that *exactly* solves each of 400 ARC-AGI tasks.
+Final honest score: **7625.77** (no exploits, no overfitting).
 
-```
-            ┌──────────────┐
-   mission  │  researcher  │  web_search ─┐
-  (topic +  ├──────────────┤              │
-  N sub-Qs) │  researcher  │  web_search ─┼──►  ┌──────────────┐
-       ──►  ├──────────────┤              │     │ synthesizer  │ ──► synthesis.md
-            │  researcher  │  web_search ─┘     └──────────────┘
-            └──────────────┘
-            N agents in PARALLEL            one agent CONSOLIDATES
-```
+What survives here is small on purpose: the campaign's working tooling lives in the
+competition repo (`neurogolf-26/neurogolf_solver/agent_kit/`), and the generic parts were
+distilled into `../../harness/`. What remains is the piece that made the difference at the
+start, plus the verified facts it produced.
 
-- **Parallel fan-out:** each researcher owns one sub-question and gathers cited facts via
-  the Anthropic server-side `web_search` tool. They run concurrently (`asyncio.gather`).
-- **Single synthesis:** one agent merges the reports, flags contradictions, marks
-  load-bearing facts, and lists what still needs primary-source confirmation.
+## `harness/verify_scoring.py`
 
-## Layout
-```
-kaggle-agent/
-├── README.md                     # this file
-├── requirements.txt              # anthropic SDK
-├── harness/
-│   ├── research_harness.py       # the orchestrator (parallel research -> synthesis)
-│   └── missions/neurogolf.json   # the NeuroGolf research mission (edit to reuse)
-└── findings/                     # outputs (committed: the brief + approach we produced)
-    ├── competition_brief.md      # NeuroGolf rules/scoring/constraints (verified)
-    └── solution_approach.md      # how to actually solve the competition
-```
+Imports the **real** `neurogolf_utils.py` and executes its scoring path, so local points
+equal leaderboard points.
 
-## Run
+Seventy-one lines, and the single highest-leverage artifact in this repo: it **falsified the
+cost formula the campaign was about to optimize against**. The research brief asserted
+`cost = params + memory + MACs`; running the authoritative scorer proved MACs had been
+removed (utils changelog 2026-05-04) — compute is free.
+
+That correction re-pointed everything. If you pay for *intermediate tensors* rather than
+compute, the target becomes "never materialize an intermediate", which is where essentially
+every later gain came from (one task 16.23 → 22.70; another 20.62 → 25.00 via a single
+50-operand Einsum).
+
 ```bash
-pip install -r requirements.txt
-export ANTHROPIC_API_KEY=sk-...
-cd harness
-python research_harness.py --mission missions/neurogolf.json --out ../findings
-# -> ../findings/research_<id>.md per researcher + ../findings/synthesis.md
+kaggle competitions download -f neurogolf_utils/neurogolf_utils.py neurogolf-2026 -p ng_data
+kaggle competitions download -f task001.json neurogolf-2026 -p ng_data
+pip install onnx onnxruntime onnx-tool ipython matplotlib numpy
+python harness/verify_scoring.py
 ```
 
-Reuse for any topic: copy `missions/neurogolf.json`, change `topic` + `questions`, rerun.
-Models are overridable via `NG_RESEARCHER_MODEL` / `NG_SYNTHESIZER_MODEL`.
+## `findings/`
 
-## What we found (NeuroGolf 2026) — verified
-See [`findings/competition_brief.md`](findings/competition_brief.md) for the verified rules,
-[`findings/solution_approach.md`](findings/solution_approach.md) for the strategy, and
-[`findings/VERIFICATION.md`](findings/VERIFICATION.md) for the claim-by-claim check against the
-authoritative `neurogolf_utils.py`.
+- **`VERIFICATION.md`** — claim-by-claim scorecard of the research against the authoritative
+  source. Besides the MACs correction it caught: I/O is one-hot `FLOAT[1,10,30,30]` (not
+  integer); graph `input`/`output` are excluded from the memory cost, so a single-node graph
+  costs 0 memory; `Compress` is banned too; and there are **400** tasks, not 199 — the
+  file-listing API silently truncated at 199 and produced a wrong "correction".
+- **`competition_brief.md`** — the verified rules, scoring and constraints.
+- **`solution_approach.md`** — the corrected strategy that followed from the above.
 
-Headline (all source-verified): per-task score `max(1, 25 - ln(cost))` with
-**`cost = params + intermediate_memory`** (**no MACs** — compute is free). Fixed one-hot I/O
-`FLOAT[1,10,30,30]`; submit one `taskNNN.onnx` for each of **400** tasks (`task001..task400`),
-≤1.44 MB each, opset 10, static shapes only, no
-`Loop/Scan/NonZero/Unique/Script/Function/Compress`/`Sequence*`. Must be 0-wrong on
-`train+test+arc-gen`. **Coverage of tasks beats micro-golfing any one**; parameter-free
-geometric ops (e.g. a pure `Transpose`) score the max 25.
+## Removed: the research orchestrator
 
-## Two flows in this harness
-- `harness/research_harness.py` — the **parallel-research → synthesis** orchestrator (the flow
-  the user asked to codify). Auth-gated pages were researched by hand this run; the orchestrator
-  is the productized version for future non-gated missions.
-- `harness/verify_scoring.py` — a **ground-truth verifier** that imports the real
-  `neurogolf_utils` and executes its scoring path, so local points == leaderboard points.
-  Download `neurogolf_utils.py` + a task JSON into `harness/ng_data/` first (see VERIFICATION.md).
+`harness/research_harness.py` (165L), `harness/missions/neurogolf.json` and
+`requirements.txt` were deleted 2026-09-02. The orchestrator was a parallel-research →
+synthesis fan-out, but:
+
+- it was **never actually run for this competition** — `findings/` contains no
+  `research_<id>.md` or `synthesis.md`, and this README previously conceded the pages "were
+  researched by hand this run";
+- its product was **wrong exactly where it mattered**: the mission asserted MACs were part
+  of the cost, which `verify_scoring.py` then had to falsify.
+
+Kept in git history if the pattern is ever wanted. The transferable lesson is recorded in
+`../../HARNESS.md`: *the harness that worked was written in response to a failure that had
+already happened; the one designed up front, from a spec, went unused.*
