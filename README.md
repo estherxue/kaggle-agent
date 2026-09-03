@@ -53,6 +53,26 @@ kaggle-agent/
 └── tests/               # 测试
 ```
 
+## Harness 记录
+
+每场比赛的 harness 复盘写在各自目录下，**按比赛作用域命名**，避免并行会话在同一路径上冲突：
+
+| 比赛 | 记录 |
+|---|---|
+| Playground S6E6（Predicting Stellar Class，private 4th/2817） | [`competitions/playground-series-s6e6/HARNESS.md`](competitions/playground-series-s6e6/HARNESS.md) |
+| NeuroGolf 2026（247 → 7625.77） | [`competitions/neurogolf-2026/HARNESS.md`](competitions/neurogolf-2026/HARNESS.md) |
+| Multi-Step Tool Attacks | [`competitions/multi-step-tool-attacks/README.md`](competitions/multi-step-tool-attacks/README.md) |
+
+写的是**过程中 harness 在哪一刻起了什么作用、改变了哪个数字**，不是组件说明书。
+跨比赛可复用的通用工具在 [`harness/`](harness/)（evidence-graded ledger + 四段审计流水线）。
+
+> **`src/kaggle_agent/` 的现状**：本仓库同名的自主 agent 框架（`Orchestrator` 状态机、
+> Cursor 文件交接协议、`PlaybookManager`/`SkillManager`/`ReflectionEngine`）**未被任何一场
+> 比赛使用过** —— 三场比赛的 `agent_tasks/` 与 `experiments/` 均为空，从未生成 `state.json`，
+> 且 `competitions/` 下无任何文件 import 它。实际起作用的是 Claude Code 直接驱动脚本、由
+> `CLAUDE.md` 约束。唯一从实战反向沉淀回框架层的是 `tools/kernel_fleet.py`。
+> 代码保留（既有资产，非本次比赛产出），此处仅作说明。
+
 ## 设计文档
 
 详见 [docs/superpowers/specs/2025-06-10-kaggle-agent-design.md](docs/superpowers/specs/2025-06-10-kaggle-agent-design.md)

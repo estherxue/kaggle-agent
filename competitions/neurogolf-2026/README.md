@@ -52,6 +52,6 @@ synthesis fan-out, but:
 - its product was **wrong exactly where it mattered**: the mission asserted MACs were part
   of the cost, which `verify_scoring.py` then had to falsify.
 
-Kept in git history if the pattern is ever wanted. The transferable lesson is recorded in
-`../../HARNESS.md`: *the harness that worked was written in response to a failure that had
-already happened; the one designed up front, from a spec, went unused.*
+Kept in git history if the pattern is ever wanted. The transferable lesson: *the harness that
+worked was written in response to a failure that had already happened; the one designed up
+front, from a spec, went unused.*

@@ -1,8 +1,7 @@
 # NeuroGolf 2026 — how the harness changed the outcome
 
-Competition-scoped companion to the cross-campaign `/HARNESS.md`. That file describes the
-scaffolding. **This one is an account of what the scaffolding actually did during the run** —
-where it intervened, what it caught, and what would have shipped without it.
+**An account of what the harness actually did during the run** — where it intervened, what it
+caught, and what would have shipped without it.
 
 **Result: 247 → 7625.77**, 400 targets, under hard no-overfit *and* no-exploit constraints.
 
