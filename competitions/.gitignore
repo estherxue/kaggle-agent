@@ -4,3 +4,7 @@
 !**/*.py
 !**/*.md
 !.gitignore
+
+# Submodule gitlinks: a competition's own solver repo, attached via `git submodule add`.
+# Must be un-ignored explicitly, otherwise the `*` rule above swallows the gitlink.
+!neurogolf-2026/solver

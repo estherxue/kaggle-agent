@@ -1,0 +1,3 @@
+[submodule "neurogolf-26"]
+	path = competitions/neurogolf-2026/solver
+	url = ../neurogolf-26.git

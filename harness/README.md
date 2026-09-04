@@ -4,10 +4,15 @@ Reusable pieces distilled from `neurogolf-2026` (400 independent optimization ta
 score 247 → 7625.77, hard no-exploit / no-overfit constraint). Everything here earned its
 place by catching a real error; nothing is included because it seemed like good practice.
 
+> **Looking for the operating procedure?** [`RUNBOOK.md`](RUNBOOK.md) is the phase-ordered
+> checklist for running a competition through this harness. This file is the deep dive on one
+> of its phases — auditing third-party artifacts (RUNBOOK Phase 6).
+
 ## What is here
 
 | file | what it is |
 |---|---|
+| `RUNBOOK.md` | the phase-ordered operating procedure for running a competition |
 | `experience_db.py` | evidence-graded ledger + posterior-reward scheduler (the one genuinely generic tool) |
 | `../competitions/neurogolf-2026/harness/verify_scoring.py` | imports the REAL scorer and runs its path — the ancestor of everything below |
 

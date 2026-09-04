@@ -18,6 +18,35 @@
 这些记录写的是**过程中 harness 在哪一刻起了作用、改变了哪个数字**，不是组件说明书。
 每场比赛一份、按比赛作用域命名，避免并行 session 在同一路径上互相覆盖。
 
+## 怎么用这套 harness 打一场比赛
+
+→ **[`harness/RUNBOOK.md`](harness/RUNBOOK.md)** —— 从三场战役提炼的作业流程，按实际推进顺序排列：
+
+| 阶段 | 做什么 | 不做的代价 |
+|---|---|---|
+| 0 | **先跑通真实评分器**再谈优化 | NeuroGolf：71 行脚本推翻了成本公式（MACs 其实免费），否则六周优化一个不计费的量 |
+| 1 | 在产出第二个 artifact 之前**冻结契约** | S6E6：13 天后 GM 的 19 个 OOF 零胶水代码接入，+0.00075 |
+| 2 | 踩过的坑**当天**写进 `CLAUDE.md` | 每条都曾烧掉多个 GPU kernel |
+| 3 | 建远端执行路径 + fleet 容错 | bash 在每个边界情况上都会挂 |
+| 4 | **先建诚实判据**再需要它 | S6E6：它一分没涨，但选中了 private 冠军 |
+| 5 | fleet 记忆：证据分级账本 | 幻影分数事件让 LB 掉了 2.70 |
+| 6 | 第三方产物走**四段审计** | 没有对照组就会回滚 14 个好模型 |
+| 7 | 按 honest CV 选提交 + 一个去相关对冲 | 只追公榜最高 → 名次更差 |
+
+手册末尾还有**停止条件**（noise-limited、天花板内在、公榜密集簇）—— 识别晚了是最常见的浪费一周的方式。
+
+## 参考实现：`neurogolf-26` submodule
+
+NeuroGolf 的求解仓库以 submodule 形式挂在 `competitions/neurogolf-2026/solver/`，
+可以对照阅读「通用版」与「完整领域实例」：
+
+```bash
+git submodule update --init competitions/neurogolf-2026/solver
+```
+
+⚠️ 它是**参考资料而非开箱即用**：9 个 `.py` 里仍写死了 `/Users/.../neurogolf-26/...` 绝对路径，
+`METHODS.md` 指向的 venv 在 `/private/tmp/` 下、重启即失效。详见 RUNBOOK 末节。
+
 ## 仓库里真正在用的东西
 
 | 位置 | 是什么 | 凭什么留下 |
@@ -68,11 +97,13 @@ kaggle competitions submit -c playground-series-s6e6 -f submissions/stack.csv -m
 kaggle-agent/
 ├── CLAUDE.md                    # 规则层（最重要的单个文件）
 ├── harness/                     # 跨比赛通用工具
+│   ├── RUNBOOK.md               #   怎么用这套 harness 打一场比赛
 │   ├── experience_db.py         #   证据分级账本 + 调度器
 │   └── README.md                #   四段审计流水线
 ├── competitions/
 │   ├── playground-series-s6e6/  #   HARNESS.md · CURSOR.md · LEADER_GAP_ANALYSIS.md · 流水线
 │   ├── neurogolf-2026/          #   HARNESS.md · findings/ · harness/verify_scoring.py
+│   │   └── solver/              #   ← submodule: estherxue/neurogolf-26（求解仓库）
 │   └── multi-step-tool-attacks/ #   README.md · FINDINGS.md · harness/eval_replay.py
 ├── .claude/skills/              # agent-field-lessons · deli-auto-research
 ├── src/kaggle_agent/            # 见上节：仅 tools/ 在用
