@@ -13,7 +13,7 @@
 |---|---|---|
 | Playground S6E6 · Predicting Stellar Class | **private 4th / 2817**（0.97060） | [`competitions/playground-series-s6e6/HARNESS.md`](competitions/playground-series-s6e6/HARNESS.md) |
 | NeuroGolf 2026 · ONNX code golf | **247 → 7625.77**（400 targets，禁过拟合 + 禁 exploit） | [`competitions/neurogolf-2026/HARNESS.md`](competitions/neurogolf-2026/HARNESS.md) |
-| Multi-Step Tool Attacks · red-team | 见目录 | [`competitions/multi-step-tool-attacks/README.md`](competitions/multi-step-tool-attacks/README.md) |
+| Multi-Step Tool Attacks · red-team | **public 85.275 → 重评 81.63**（诚实上限，禁 hack/过拟合/豪赌） | [`competitions/multi-step-tool-attacks/HARNESS.md`](competitions/multi-step-tool-attacks/HARNESS.md) |
 
 这些记录写的是**过程中 harness 在哪一刻起了作用、改变了哪个数字**，不是组件说明书。
 每场比赛一份、按比赛作用域命名，避免并行 session 在同一路径上互相覆盖。
@@ -104,7 +104,7 @@ kaggle-agent/
 │   ├── playground-series-s6e6/  #   HARNESS.md · CURSOR.md · LEADER_GAP_ANALYSIS.md · 流水线
 │   ├── neurogolf-2026/          #   HARNESS.md · findings/ · harness/verify_scoring.py
 │   │   └── solver/              #   ← submodule: estherxue/neurogolf-26（求解仓库）
-│   └── multi-step-tool-attacks/ #   README.md · FINDINGS.md · harness/eval_replay.py
+│   └── multi-step-tool-attacks/ #   HARNESS.md · README.md · FINDINGS.md · harness/eval_replay.py
 ├── .claude/skills/              # agent-field-lessons · deli-auto-research
 ├── src/kaggle_agent/            # 见上节：仅 tools/ 在用
 ├── knowledge/                   # playbooks + skills（其加载器未启用）
