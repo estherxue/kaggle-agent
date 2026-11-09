@@ -11,9 +11,9 @@
 
 | 比赛 | 结果 | harness 记录 |
 |---|---|---|
-| Playground S6E6 · Predicting Stellar Class | **private 4th / 2817**（0.97060） | [`competitions/playground-series-s6e6/HARNESS.md`](competitions/playground-series-s6e6/HARNESS.md) |
-| NeuroGolf 2026 · ONNX code golf | **247 → 7625.77**（400 targets，禁过拟合 + 禁 exploit） | [`competitions/neurogolf-2026/HARNESS.md`](competitions/neurogolf-2026/HARNESS.md) |
-| Multi-Step Tool Attacks · red-team | **public 85.275 → 重评 81.63**（诚实上限，禁 hack/过拟合/豪赌） | [`competitions/multi-step-tool-attacks/HARNESS.md`](competitions/multi-step-tool-attacks/HARNESS.md) |
+| Playground S6E6 · Predicting Stellar Class | **private 4 / 2816**（0.97060；公榜 438） | [`competitions/playground-series-s6e6/HARNESS.md`](competitions/playground-series-s6e6/HARNESS.md) |
+| NeuroGolf 2026 · ONNX code golf | **462 / 2963**（截止日 7372.37；赛后续刷到 7625.77，不计名次） | [`competitions/neurogolf-2026/HARNESS.md`](competitions/neurogolf-2026/HARNESS.md) |
+| Multi-Step Tool Attacks · red-team | **2085 / 4186**（提交时 85.275 → 重评 81.63；禁 hack/过拟合/豪赌） | [`competitions/multi-step-tool-attacks/HARNESS.md`](competitions/multi-step-tool-attacks/HARNESS.md) |
 
 这些记录写的是**过程中 harness 在哪一刻起了作用、改变了哪个数字**，不是组件说明书。
 每场比赛一份、按比赛作用域命名，避免并行 session 在同一路径上互相覆盖。

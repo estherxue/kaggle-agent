@@ -2,7 +2,7 @@
 
 Kaggle red-team competition `ai-agent-security-multi-step-tool-attacks`
 (OpenAI × Google × IEEE, $50k). Metric: normalized attack score 0–1000.
-**Peak public LB 85.275 (v13); re-graded to 81.63 on a stricter final run.**
+**Peak public LB 85.275 (v13); re-graded to 81.63 on a stricter final run. Final standing 2085 / 4186** (verified on Kaggle 2026-11-08).
 Goal was a *robust, honest* score with no constraint relaxation: no `replay_safe=0.99`
 void-gamble, no public-LB substring fitting, no overfit tricks. The goal (≥50, then >85)
 was met and held.

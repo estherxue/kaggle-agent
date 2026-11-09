@@ -1,7 +1,7 @@
 # S6E6 — how the harness carried the campaign
 
 Playground Series S6E6 (Predicting Stellar Class), 2026-06-13 → 07-01.
-**4th / 2817**, private 0.97060.
+**public 438 / 2817 → private 4 / 2816**, private 0.97060 (verified on Kaggle 2026-11-08).
 
 This is not a description of the harness. It is an account of *where the harness intervened
 during the run*, what it changed at that moment, and what it failed to do. Each section is

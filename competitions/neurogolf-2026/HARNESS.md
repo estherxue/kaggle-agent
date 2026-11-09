@@ -3,7 +3,7 @@
 **An account of what the harness actually did during the run** — where it intervened, what it
 caught, and what would have shipped without it.
 
-**Result: 247 → 7625.77**, 400 targets, under hard no-overfit *and* no-exploit constraints.
+**Official: 462 / 2963, score 7372.37 at the 2026-07-15 deadline** (verified on Kaggle 2026-11-08). The 247 → 7625.77 arc below continued ~6 weeks past the deadline as un-ranked practice — those gains are real but not in the standing. 400 targets, under hard no-overfit *and* no-exploit constraints.
 
 The honest thesis: **the harness's job was to catch me being wrong, and it had to do that
 repeatedly.** Almost every score gain below is downstream of a moment where a mechanism
