@@ -20,6 +20,31 @@ The audit pipeline itself is documented below rather than shipped as an abstract
 its code is inseparable from ONNX/ARC, and a hook-based "generic" version would be an empty
 shell. The *shape* is what transfers.
 
+## Component index — the four recurring pieces, across the three campaigns
+
+The harness is not one framework but four recurring kinds of part, each written reactively and
+each kept next to the campaign it served. Where each lives (paths relative to the repo root):
+
+| part | campaign | path |
+|---|---|---|
+| **scorer / scoring reverse-eng** | NeuroGolf | `competitions/neurogolf-2026/harness/verify_scoring.py` |
+| | MSTA | `competitions/multi-step-tool-attacks/FINDINGS.md` (rules; the real scorer is the competition SDK) |
+| | S6E6 | `competitions/playground-series-s6e6/metrics.py` (standard balanced-accuracy) |
+| **contract (fold / alignment)** | S6E6 | `competitions/playground-series-s6e6/config.py` + `kaggle/code_ds/kernel_common.py` |
+| **ledger** | generic | `harness/experience_db.py` (evidence levels + posterior-reward scheduler) |
+| | S6E6 | `competitions/playground-series-s6e6/experiment_log.py`, `LEADER_GAP_ANALYSIS.md` |
+| | MSTA | `competitions/multi-step-tool-attacks/PLAN.md` (experiment ladder) |
+| **offline evaluator** | MSTA | `competitions/multi-step-tool-attacks/harness/{eval_replay,evasion_probe,test_attack_offline}.py`; packaging in `kaggle/build_notebook.py` |
+| | S6E6 | `competitions/playground-series-s6e6/nested_cv.py` + `select_final.py` |
+| | NeuroGolf | gate / differential preflight in the submodule `competitions/neurogolf-2026/solver/neurogolf_solver/agent_kit/` |
+
+**Two pieces live outside this repo:**
+- NeuroGolf's real tooling (~2,200 lines: gate, ledger, methods) is the submodule
+  `competitions/neurogolf-2026/solver/` -> `estherxue/neurogolf-26`; only `harness/verify_scoring.py`
+  is kept in-repo.
+- MSTA's solution `attack.py` is the separate repo `estherxue/multi-step-tool-attacks`, kept out of this
+  public worktree during the active competition.
+
 ---
 
 ## The audit pipeline (pattern)
