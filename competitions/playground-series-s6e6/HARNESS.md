@@ -168,9 +168,15 @@ every pulled array with up to 3 re-pulls, and `diagnose_log()` mapping six known
 to their actual fix text.
 
 **What it changed.** It let the campaign run kernels unattended. Concretely, on 06-29 it
-pushed and managed three concurrent CPU kernels with auto-pull and shape verification, and a
-mass-FE kernel that hit the 12h wall was **cancelled without losing its work** — the OOF had
-been written before the test predictions, so it survived the cancel and pulled cleanly.
+pushed and managed three concurrent CPU kernels with auto-pull and shape verification. One of
+them, the mass-FE kernel, hit the 12h wall during its CatBoost half and was cancelled — and
+**its LightGBM half survived**. That was the kernel's doing, not the driver's: `kaggle/massfe/run.py`
+trains and saves one model at a time, LightGBM first, so `oof_massfe_lgb.npy` and
+`test_massfe_lgb.npy` were already on disk; only `massfe_cat` was lost. The driver's part was
+that its cancel path still pulls outputs (via the `kernels output` call inside `diagnose()`),
+though that path does not shape-check them. A different kernel, TabPFN, shows the other
+variant: its OOF was saved before test prediction began, so `oof_tabpfn.npy` survived a 12h
+cancel and `test_tabpfn.npy` was never written (`CURSOR.md`).
 
 **Also this phase — the plateau is confirmed, honestly.** Adding OvR models raised OOF
 +0.0003 but LB stayed flat (0.97066 → 0.97061). Rather than reading that as noise to push
@@ -276,9 +282,9 @@ The private leaderboard is the only place the harness's central claim could be t
 | `nested_cv.py` | 06-22, 07-01 | rejected ET pre-submission; **picked the private winner** |
 | noise detection | 06-22 | correctly ended the marginal-member phase (acted on 3 days late) |
 | the contract, again | 06-26→29 | made "prove the ceiling" a measurement, not an opinion |
-| `kernel_fleet.py` | 06-27→29 | unattended fleets; salvaged a 12h-wall kernel's OOF |
-| `LEADER_GAP_ANALYSIS.md` | throughout | recorded a wrong ceiling claim *and its revision* |
-| `experiment_log.py` | throughout | append-only CSV/JSONL; the only reason this account can be reconstructed |
+| `kernel_fleet.py` | 06-27→29 | unattended fleets; its cancel path still pulled the half of a 12h-cancelled kernel that the kernel had saved first |
+| `LEADER_GAP_ANALYSIS.md` | 06-24→07-01 | the main record this account is reconstructed from; kept a wrong ceiling claim *and its revision* |
+| `experiment_log.py` | 06-15→06-20 only | append-only CSV/JSONL of the local phase (22 records; `public_lb` never filled); stopped when training moved to Kaggle kernels, which write `results.txt` instead |
 
 ## What the harness failed to do
 

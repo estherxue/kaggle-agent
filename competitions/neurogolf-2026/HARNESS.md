@@ -21,8 +21,15 @@ that import the *real* scorer and execute its path — showed MACs had been remo
 objective. **Compute is free.**
 
 *What it changed:* the target flipped from "reduce arithmetic" to "never materialize an
-intermediate tensor". Every large gain in the entire campaign came from that reframe — one
-target 16.23 → 22.70, another 20.62 → 25.00 via a single 50-operand Einsum.
+intermediate tensor". Its limit is a single-node graph: no named intermediates, so memory 0
+and the cost is params alone. By the deadline, 100 of the 400 shipped models were single-node
+(57 of them one Einsum). That was not all my construction — one public pack alone held 140
+single-op models, and the repo has no per-task record of which of the 100 were built here and
+which were merged in.
+The two most striking numbers — one target 16.23 → 22.70, another 20.62 → 25.00 via a single
+50-operand Einsum — are both **post-deadline, and both other teams' models**, taken in through
+the audit pipeline (§2–§4) in August. They show what the reframe makes possible, not what I
+built with it.
 *Without it:* six weeks optimizing a quantity that costs nothing.
 
 It also corrected the task count from 199 to **400** — the file-listing API had silently
@@ -82,8 +89,11 @@ counterexample appeared I could see immediately which premise died — the winni
 indexed its intermediate by *hypothesis* rather than by grid position, so no large contraction
 was needed.
 
-*What it changed:* that target went 16.23 → 19.41 → 22.70.
-*Without it:* a permanent "impossible" tag on a solvable target.
+*What it changed:* the counterexample was not mine — it was a 4-node model in the rmz7477
+public pack, absorbed on 2026-08-01, after the deadline (16.23 → 19.41; a model from a later
+pack took it to 22.70). The pack scan would have taken it regardless of the tag. What the
+written-down reasoning added was the *diagnosis* — which premise had died — now METHODS #36.
+*Without it:* the same score, but no record of *why* the "impossible" was wrong.
 
 The same error recurred twice more (a "80 bytes is the floor" that fell to cost 1; a headroom
 bound off by 370×). The pattern the ledger surfaced: **my lower bounds were bounds on the

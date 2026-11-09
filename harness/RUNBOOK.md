@@ -130,7 +130,9 @@ Once the shell scripts start dying on edge cases, replace them with
 
 **Checklist**
 - [ ] Kernels must save the *most valuable* artifact first. A mass-FE kernel hit the 12h wall
-      and was cancelled — its OOF survived because it was written before the test predictions.
+      during its second model (CatBoost) and was cancelled — the first model's arrays survived
+      because the kernel saved them before starting the second. A TabPFN kernel saved its OOF
+      before test prediction, so the OOF survived a 12h cancel while the test array was lost.
 - [ ] Run the fleet driver as a **tracked background job**. A foreground driver was killed by an
       overnight session restart.
 - [ ] For code you cannot test locally: author it, then have a **second agent adversarially

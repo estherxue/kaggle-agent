@@ -1,7 +1,8 @@
 # NeuroGolf 2026 — what this competition contributed
 
 Build the smallest ONNX network that *exactly* solves each of 400 ARC-AGI tasks.
-Final honest score: **7625.77** (no exploits, no overfitting).
+Official result: **462 / 2963, 7372.37** at the 2026-07-15 deadline. Un-ranked practice after
+the deadline took the honest score to 7625.77 (no exploits, no overfitting).
 
 What survives here is small on purpose: the campaign's working tooling lives in the
 competition repo (`neurogolf-26/neurogolf_solver/agent_kit/`), and the generic parts were
@@ -19,9 +20,11 @@ cost formula the campaign was about to optimize against**. The research brief as
 removed (utils changelog 2026-05-04) — compute is free.
 
 That correction re-pointed everything. If you pay for *intermediate tensors* rather than
-compute, the target becomes "never materialize an intermediate", which is where essentially
-every later gain came from (one task 16.23 → 22.70; another 20.62 → 25.00 via a single
-50-operand Einsum).
+compute, the target becomes "never materialize an intermediate" — at the limit a single-node
+graph, which costs params alone. The deadline bundle had 100/400 single-node models, though
+the repo does not record how many were built here versus merged from public packs. The two
+best-known examples (one task 16.23 → 22.70; another 20.62 → 25.00 via a single 50-operand
+Einsum) are other teams' models, absorbed after the deadline.
 
 ```bash
 kaggle competitions download -f neurogolf_utils/neurogolf_utils.py neurogolf-2026 -p ng_data
